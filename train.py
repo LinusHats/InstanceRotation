@@ -29,6 +29,17 @@ assert config is not None, "Config file not found!"
 
 timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
+wandb.init(
+    project="ProjectName",
+
+    config={
+        "learning_rate": 0.0.00005,
+        "architecture": "CNN",
+        "dataset": "CIFAR-100",
+        "epochs": 50,
+    }
+)
+
 summary_path = f"C:/Users/linus/Documents/Datasets/InstanceRotation/logs/LOG_{config['SUMMARY_NAME']}_{timestamp}.txt"
 model_path = f"C:/Users/linus/Documents/Datasets/InstanceRotation/models/MODEL_{config['SUMMARY_NAME']}_{timestamp}.pth"
 writer_path =f"C:/Users/linus/Documents/Datasets/InstanceRotation/runs/{config['SUMMARY_NAME']}_{timestamp}"
@@ -422,6 +433,8 @@ for epoch in tqdm(range(config["EPOCHS"]), position=0, desc='Epochs'):
     epoch_stats['train_loss'].append(avg_loss) 
     epoch_stats['val_loss'].append(avg_vloss)
     epoch_stats['val_acc'].append(vcorrect/vtotal)
+    
+    wandb.log({"acc": vcorrect/vtotal, "loss": avg_vloss})
 
     writer.add_scalars('Losses per epoch', 
                         {'Training' : avg_loss, 'Validation' : avg_vloss},
@@ -456,6 +469,8 @@ def test(data_loader=test_dataloader):
     
     print(f'Accuracy of the network on the {total} test images: {100*correct/total:.4f} %')
     return correct, total
+
+wandb.finish()
 
 
 correct, total = test()
