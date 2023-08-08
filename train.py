@@ -21,6 +21,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from IPython import display
 import yaml
+import wandb
 warnings.filterwarnings("ignore") # __/OO\__
 
 with open("./config.yml", "r") as f:
@@ -32,6 +33,18 @@ timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 summary_path = f"{config['BASE_PATH']}/logs/LOG_{config['SUMMARY_NAME']}_{timestamp}.txt"
 model_path = f"{config['BASE_PATH']}/models/MODEL_{config['SUMMARY_NAME']}_{timestamp}.pth"
 writer_path =f"{config['BASE_PATH']}/runs/{config['SUMMARY_NAME']}_{timestamp}"
+
+# wandb.init({project="ProjectName",
+
+#     config={
+#         "learning_rate": 0.0.00005,
+#         "architecture": "CNN",
+#         "dataset": "CIFAR-100",
+#         "epochs": 50,
+#     }
+# )
+
+
 
 if config["RESUME"]:
     summary_path = f"{config['BASE_PATH']}/logs/LOG_RESUME_{config['SUMMARY_NAME']}_{timestamp}.txt"
@@ -48,14 +61,14 @@ if config["RESUME"]:
         f.flush()
 
 ### Set the Device for training ###
-if config["MACHINE"] == "NPU":
+try:
     import torch_directml
     device = torch_directml.device(torch_directml.default_device())
-
-if torch.backends.mps.is_available():
-    device = torch.device("mps")
-else:
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+except:
+    if torch.backends.mps.is_available():
+        device = torch.device("mps")
+    else:
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 print("[INFO] ``device`` was set to {}".format(device))
 ### Get the models ready ###
@@ -422,6 +435,8 @@ for epoch in tqdm(range(config["EPOCHS"]), position=0, desc='Epochs'):
     epoch_stats['train_loss'].append(avg_loss) 
     epoch_stats['val_loss'].append(avg_vloss)
     epoch_stats['val_acc'].append(vcorrect/vtotal)
+    
+    wandb.log({"acc": vcorrect/vtotal, "loss": avg_vloss})
 
     writer.add_scalars('Losses per epoch', 
                         {'Training' : avg_loss, 'Validation' : avg_vloss},
@@ -456,6 +471,8 @@ def test(data_loader=test_dataloader):
     
     print(f'Accuracy of the network on the {total} test images: {100*correct/total:.4f} %')
     return correct, total
+
+wandb.finish()
 
 
 correct, total = test()
