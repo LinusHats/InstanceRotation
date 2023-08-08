@@ -29,20 +29,20 @@ assert config is not None, "Config file not found!"
 
 timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-summary_path = f"C:/Users/linus/Documents/Datasets/InstanceRotation/logs/LOG_{config['SUMMARY_NAME']}_{timestamp}.txt"
-model_path = f"C:/Users/linus/Documents/Datasets/InstanceRotation/models/MODEL_{config['SUMMARY_NAME']}_{timestamp}.pth"
-writer_path =f"C:/Users/linus/Documents/Datasets/InstanceRotation/runs/{config['SUMMARY_NAME']}_{timestamp}"
+summary_path = f"{config['BASE_PATH']}/logs/LOG_{config['SUMMARY_NAME']}_{timestamp}.txt"
+model_path = f"{config['BASE_PATH']}/models/MODEL_{config['SUMMARY_NAME']}_{timestamp}.pth"
+writer_path =f"{config['BASE_PATH']}/runs/{config['SUMMARY_NAME']}_{timestamp}"
 
 if config["RESUME"]:
-    summary_path = f"C:/Users/linus/Documents/Datasets/InstanceRotation/logs/LOG_RESUME_{config['SUMMARY_NAME']}_{timestamp}.txt"
-    model_path = f"C:/Users/linus/Documents/Datasets/InstanceRotation/models/MODEL_RESUME_{config['SUMMARY_NAME']}_{timestamp}.pth"
-    writer_path =f"C:/Users/linus/Documents/Datasets/InstanceRotation/runs/RESUME_{config['SUMMARY_NAME']}_{timestamp}"
+    summary_path = f"{config['BASE_PATH']}/logs/LOG_RESUME_{config['SUMMARY_NAME']}_{timestamp}.txt"
+    model_path = f"{config['BASE_PATH']}/models/MODEL_RESUME_{config['SUMMARY_NAME']}_{timestamp}.pth"
+    writer_path =f"{config['BASE_PATH']}/runs/RESUME_{config['SUMMARY_NAME']}_{timestamp}"
     
-    with open(f"C:/Users/linus/Documents/Datasets/InstanceRotation/logs/LOG_{config['RESUME_SUMMARY_NAME']}.txt", "r") as f:
+    with open(f"{config['BASE_PATH']}/logs/LOG_{config['RESUME_SUMMARY_NAME']}.txt", "r") as f:
         lines = f.readlines()
     f.close()
     
-    with open(f"C:/Users/linus/Documents/Datasets/InstanceRotation/logs/LOG_RESUME_{config['RESUME_SUMMARY_NAME']}.txt", "w+") as f:
+    with open(f"{config['BASE_PATH']}/logs/LOG_RESUME_{config['RESUME_SUMMARY_NAME']}.txt", "w+") as f:
         f.write("# RESUMING TRAINING\n")
         f.writelines(lines)
         f.flush()
@@ -62,9 +62,9 @@ print("[INFO] ``device`` was set to {}".format(device))
 
 
 pretrained_models = {
-    "vgg11" : torch.load("./pretrained_models/vgg11_pretrained.pth"),
-    "vgg16" : torch.load("./pretrained_models/vgg16_pretrained.pth"),
-    "vgg19" : torch.load("./pretrained_models/vgg19_pretrained.pth")
+    "vgg11" : torch.load(f"{config['BASE_PATH']}/pretrained_models/vgg11_pretrained.pth"),
+    "vgg16" : torch.load(f"{config['BASE_PATH']}/pretrained_models/vgg16_pretrained.pth"),
+    "vgg19" : torch.load(f"{config['BASE_PATH']}/pretrained_models/vgg19_pretrained.pth")
 }
 
 vgg11 = nn.Sequential(
@@ -272,7 +272,6 @@ else:
             initialize_vgg19()
             print("[INFO] Initializing VGG19 with pretrained weights")
 
-    
 model = model.to(device)
 
 ### Get the data ready  ###
@@ -289,13 +288,14 @@ classes = {
 whole_data = DepictionDataset(annotations_file=config["LABEL_FILE_PATH"],
                               img_dir=config["IMAGE_DIR_PATH"], 
                               img_size=(224, 224))
+print(len(whole_data))
 
 whole_data.set_mean((0.5,)) # TODO Check if that realy the case
 whole_data.set_std((0.5,))
 
 print("[INFO] making train and test data from the dataset...")
 train_data, test_data = random_split(dataset=whole_data,
-                                    lengths=[int(len(whole_data)*0.7), int(len(whole_data)*0.3)+1],
+                                    lengths=[int(len(whole_data)*0.7)+1, int(len(whole_data)*0.3)],
                                     generator=torch.Generator().manual_seed(442))
 
 # generating the train and val splits
@@ -417,7 +417,7 @@ for epoch in tqdm(range(config["EPOCHS"]), position=0, desc='Epochs'):
     avg_vloss = running_vloss / (i+1)
     # print(f'LOSS train {avg_loss:.5f} valid {avg_vloss:.5f}')
 
-    # Log the running loss averaged per batch for both training and validation
+    # Log the running loss averaged per batch for both training and validations
     epoch_stats['epoch'].append(epoch_number)
     epoch_stats['train_loss'].append(avg_loss) 
     epoch_stats['val_loss'].append(avg_vloss)
@@ -432,11 +432,11 @@ for epoch in tqdm(range(config["EPOCHS"]), position=0, desc='Epochs'):
     writer.flush()
     with open(summary_path, 'a') as f:
         f.write(f'{epoch_number},{avg_loss},{avg_vloss},{vcorrect/vtotal}\n')
-    torch.save(model,  f"{config['MODEL_SAVE_PATH']}/LAST_{config['SUMMARY_NAME']}_{timestamp}.pth")
+    torch.save(model,  f"{config['BASE_PATH']}/models/LAST_{config['SUMMARY_NAME']}_{timestamp}.pth")
     # Track best performance, and save the model's state
     if avg_vloss < best_vloss:
         best_vloss = avg_vloss
-        model_path = f"{config['MODEL_SAVE_PATH']}/BEST_{config['SUMMARY_NAME']}_{timestamp}.pth"
+        model_path = f"{config['BASE_PATH']}/models/BEST_{config['SUMMARY_NAME']}_{timestamp}.pth"
         torch.save(model,  model_path)
     
     epoch_number += 1
