@@ -1,0 +1,26 @@
+MACHINE: SURFACE #MAC #CPU # "NPU", "MAC"
+MODEL: VGG11
+PRETRAINED: False
+
+RESUME: False
+RESUME_TIMESTAMP: 2023-08-06_22-42-10
+RESUME_SUMMARY_NAME: VGG19_clean_2023-08-06_22-42-10
+RESUME_MODEL: models/LAST_VGG19_clean_2023-08-06_22-42-10.pth
+RESUME_EPOCH: 100
+
+INIT_LR: 0.00005
+BATCH_SIZE:  32
+EPOCHS: 50
+
+TRAIN_SPLIT: 0.80
+
+NUM_CLASSES: 8
+NUM_CHANNELS: 3
+DROPOUT_P: 0.7
+
+
+SUMMARY_NAME: VGG11
+SUMMARY_COMMENT: VGG11 on shapecatalogue no pretraining
+IMAGE_DIR_PATH: C:\Users\linus\Documents\Datasets\InstanceRotation\TrainShapeCatalog
+LABEL_FILE_PATH: C:\Users\linus\Documents\Datasets\InstanceRotation\labels.csv
+MODEL_SAVE_PATH: C:\Users\linus\Documents\Datasets\InstanceRotation\models\labels.csv
