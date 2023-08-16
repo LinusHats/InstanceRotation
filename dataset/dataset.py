@@ -1,16 +1,10 @@
 import os
-from tqdm.notebook import tqdm
 import cv2
 import numpy as np
 import pandas as pd
-import torch
 from matplotlib import pyplot as plt
-from skimage import transform
 from torch.utils.data import Dataset
 from torchvision.transforms import transforms
-from torch.utils.data import DataLoader
-
-
 
 class DepictionDataset(Dataset):
     labels_map = {
@@ -51,11 +45,11 @@ class DepictionDataset(Dataset):
         
         img_path = os.path.join(self.img_dir,
                                 self.img_labels.iloc[idx, 0])
+        # print(img_path)
         image = cv2.imread(img_path, cv2.IMREAD_UNCHANGED)
         image = cv2.resize(image, self.img_size)
         img_tensor = transform(image)
         label = self.img_labels.iloc[idx, 1]
-        label = torch.tensor(int(label))
         return img_tensor, label
     
     def set_mean(self, mean):
@@ -64,17 +58,6 @@ class DepictionDataset(Dataset):
     def set_std(self, std):
         self.std = std
 
-def get_mean_std(dataset):
-    mean = 0.
-    std = 0.
-    dataloader = DataLoader(dataset)
-    for image,_ in tqdm(dataloader):
-        # image = dataset[i][0]
-        mean += torch.mean(image)
-        std += torch.std(image)
-    mean /= len(dataset)
-    std /= len(dataset)
-    return mean, std
     
     
 # Helper function for inline image display
@@ -82,7 +65,6 @@ def matplotlib_imshow(img, one_channel=False):
     if one_channel:
         img = img.mean(dim=0)
     img = img / 2 + 0.5  # unnormalize
-    img = img.to("cpu")
     npimg = img.numpy()
     if one_channel:
         plt.imshow(npimg, cmap="Greys")
