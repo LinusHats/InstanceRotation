@@ -34,15 +34,17 @@ summary_path = f"{config['BASE_PATH']}/logs/LOG_{config['SUMMARY_NAME']}_{timest
 model_path = f"{config['BASE_PATH']}/models/MODEL_{config['SUMMARY_NAME']}_{timestamp}.pth"
 writer_path =f"{config['BASE_PATH']}/runs/{config['SUMMARY_NAME']}_{timestamp}"
 
-# wandb.init({project="ProjectName",
+wandb.init(
+    project="VGG",
 
-#     config={
-#         "learning_rate": 0.0.00005,
-#         "architecture": "CNN",
-#         "dataset": "CIFAR-100",
-#         "epochs": 50,
-#     }
-# )
+    config={
+        "comment": "VGG19_pretraining",
+        "learning_rate": 0.00005,
+        "architecture": "CNN19",
+        "dataset": "ShapeCatalogue",
+        "epochs": 50,
+    }
+)
 
 
 

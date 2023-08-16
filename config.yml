@@ -1,6 +1,6 @@
 MACHINE: GPU2 #MAC #CPU # "NPU", "MAC"
-MODEL: VGG16
-PRETRAINED: False
+MODEL: VGG19
+PRETRAINED: True
 
 RESUME: False
 RESUME_TIMESTAMP: 2023-08-06_22-42-10
@@ -19,8 +19,8 @@ NUM_CHANNELS: 3
 DROPOUT_P: 0.7
 
 
-SUMMARY_NAME: VGG16
-SUMMARY_COMMENT: VGG16 on shape catalogue, no pretraining
+SUMMARY_NAME: VGG19_pre
+SUMMARY_COMMENT: VGG19 on shape catalogue, pretraining (the correct one)
 IMAGE_DIR_PATH:  C:\Users\lhartz\datasets\InstanceRotation\TrainShapeCatalog
 LABEL_FILE_PATH: C:\Users\lhartz\datasets\InstanceRotation\labels.csv
 # MODEL_SAVE_PATH: U:\piresearchStudentsShared\Linus_Hartz\08_Models\SymbolOrientation\models
