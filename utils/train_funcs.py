@@ -62,7 +62,7 @@ def build_optimizer(model, initial_learning_rate):
 def build_model_vgg16(dropout_p, model_path):
     # print("[INFO] loading model...")
     vgg16 = nn.Sequential(
-                    nn.Conv2d(3, 64, (3, 3), (1, 1), (1, 1)),    # 0
+                    nn.Conv2d(3, 64, (3, 3), (1, 1), (1, 1)),               # 0
                     nn.ReLU(True),                                          # 1
                     nn.Conv2d(64, 64, (3, 3), (1, 1), (1, 1)),              # 2
                     nn.BatchNorm2d(64),                                     # 3
@@ -115,18 +115,16 @@ def build_model_vgg16(dropout_p, model_path):
                     nn.Dropout(dropout_p, False),                            # 45
                     nn.Linear(4096, 8, True)                                 # 46
                 )
-
-    
-
     # print("[INFO] loading pretrained model...")
     pretrained_model = torch.load(model_path)
+    # print(pretrained_model)
     # print("[INFO] initializing weights...")
     for i, j in zip([0, 2, 6, 8, 12, 14, 16, 20, 22, 24, 28, 30, 32], 
-                [0, 2, 5, 7, 10, 12, 14, 17, 19, 21, 24, 26, 28]):
+                    [0, 2, 5, 7, 10, 12, 14, 17, 19, 21, 24, 26, 28]):
         vgg16[i].weight.data = pretrained_model.get_parameter(f'features.{j}.weight')
         vgg16[i].bias.data   = pretrained_model.get_parameter(f'features.{j}.bias')
     for i, j in zip([38, 42], 
-                [0 ,  3]):
+                    [0 ,  3]):
         vgg16[i].weight.data = pretrained_model.get_parameter(f'classifier.{j}.weight')
         vgg16[i].bias.data   = pretrained_model.get_parameter(f'classifier.{j}.bias')
         
