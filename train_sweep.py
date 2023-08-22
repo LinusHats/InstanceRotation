@@ -56,7 +56,7 @@ def make(config, base_path):
     # get the dataloaders
     train_loader, val_loader, test_loader = build_dataloaders(base_path, config.batch_size)
     # print("\nStarting to build model")
-    model = build_model_vgg11(config.dropout_p)
+    model = build_model()
     # print("\nStarting to build optimizer")
     optimizer = build_optimizer(model, config.initial_learning_rate)
     # print("\nStarting to build criterion")
