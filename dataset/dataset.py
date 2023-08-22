@@ -47,6 +47,19 @@ class DepictionDataset(Dataset):
                                 self.img_labels.iloc[idx, 0])
         # print(img_path)
         image = cv2.imread(img_path, cv2.IMREAD_UNCHANGED)
+        # resize so that the longer side is 224 pixels and pad the other
+        larger_side = max(image.shape[0], image.shape[1])
+        scale = 224 / larger_side
+        image = cv2.resize(image, (0,0), fx=scale, fy=scale)
+        # pad the image
+        missing_length = 244 - min(image.shape[0], image.shape[1])
+        border_to_add = missing_length // 2
+        if image.shape[0] > image.shape[1]:
+            image = cv2.copyMakeBorder(image, 0, 0, border_to_add, border_to_add, cv2.BORDER_CONSTANT, value=255)
+        else:
+            image = cv2.copyMakeBorder(image, border_to_add, border_to_add, 0, 0, cv2.BORDER_CONSTANT, value=255)
+        print(image.shape)
+        # make shure everyting has the right size
         image = cv2.resize(image, self.img_size)
         img_tensor = transform(image)
         label = self.img_labels.iloc[idx, 1]
@@ -60,13 +73,3 @@ class DepictionDataset(Dataset):
 
     
     
-# Helper function for inline image display
-def matplotlib_imshow(img, one_channel=False):
-    if one_channel:
-        img = img.mean(dim=0)
-    img = img / 2 + 0.5  # unnormalize
-    npimg = img.numpy()
-    if one_channel:
-        plt.imshow(npimg, cmap="Greys")
-    else:
-        plt.imshow(np.transpose(npimg, (1, 2, 0)))
