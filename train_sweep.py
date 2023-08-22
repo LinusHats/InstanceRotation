@@ -35,7 +35,7 @@ def main(config=None):
        else:
             device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("[INFO] Using device: ", device)
-    base_path = r'C:\Users\lhartz\datasets\InstanceRotation\InstanceCatalogue\InstanceCatalog'
+    base_path = r'/Users/lukaspodolski/Documents/GitHub/DATASET/InstanceCatalog'
 
     
     with wandb.init(config=config):
@@ -56,7 +56,7 @@ def make(config, base_path):
     # get the dataloaders
     train_loader, val_loader, test_loader = build_dataloaders(base_path, config.batch_size)
     # print("\nStarting to build model")
-    model = build_model_vgg16_no_batchnorm(config.dropout_p, f"{base_path}/vgg16_pretrained.pth")
+    model = build_model_vgg11(config.dropout_p)
     # print("\nStarting to build optimizer")
     optimizer = build_optimizer(model, config.initial_learning_rate)
     # print("\nStarting to build criterion")
@@ -69,31 +69,35 @@ def make(config, base_path):
 if __name__ == "__main__":
     wandb.login(key="c3a6ab2da3aa3b00ec85e71846c96e5385899ac1")
     sweep_config = {
-        'method': 'random',
+        'method': 'bayes',  #random
         'name': 'NoBatchNorm_NoPretrain_initWithKaiming',
-        'project': 'VGG16_InstanceRotation',
+        'project': 'VGG11_InstanceRotation',
         'metric': {
             'name': 'val_acc',
             'goal': 'maximize'
         },
         'parameters': {
             'batch_size': {
-                'values': [16 , 25 , 32, 45 , 64]
+                'values': [2,4,6,8]
             },
             'initial_learning_rate': {
                 'distribution': 'uniform',
                 'min': 0.000005,
-                'max': 0.0005
+                'max': 0.001
             },
             'epochs': {
                 'value': 50,
             },
             'dropout_p': {
                 'distribution': 'uniform',
-                'min': 0.5,
+                'min': 0.3,
                 'max': 0.95,
             }
         },
+        'early_terminate': {
+            'type': 'hyperband',
+            'min_iter': 5
+            }
     }
 
     sweep_id = wandb.sweep(sweep=sweep_config, project=sweep_config["project"])

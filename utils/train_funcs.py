@@ -65,7 +65,7 @@ def init_weights(m):
         torch.nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
         m.bias.data.fill_(0.01)
     
-def build_model_vgg11(dropout_p, model_path):
+def build_model_vgg11(dropout_p):
     # print("[INFO] loading model...")
     vgg11 = nn.Sequential(
                     nn.Conv2d(3, 64, (3, 3), (1, 1), (1, 1)),               # 0
