@@ -56,7 +56,7 @@ def make(config, base_path):
     # get the dataloaders
     train_loader, val_loader, test_loader = build_dataloaders(base_path, config.batch_size)
     # print("\nStarting to build model")
-    model = build_model_vgg16(config.dropout_p, f"{base_path}/vgg16_pretrained.pth")
+    model = build_model_vgg16_no_batchnorm(config.dropout_p, f"{base_path}/vgg16_pretrained.pth")
     # print("\nStarting to build optimizer")
     optimizer = build_optimizer(model, config.initial_learning_rate)
     # print("\nStarting to build criterion")
@@ -70,7 +70,7 @@ if __name__ == "__main__":
     wandb.login(key="c3a6ab2da3aa3b00ec85e71846c96e5385899ac1")
     sweep_config = {
         'method': 'random',
-        'name': 'GPU2_1',
+        'name': 'NoBatchNorm_NoPretrain_initWithKaiming',
         'project': 'VGG16_InstanceRotation',
         'metric': {
             'name': 'val_acc',

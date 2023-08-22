@@ -56,8 +56,64 @@ def build_dataloaders(base_path, batch_size):
 def build_optimizer(model, initial_learning_rate):
     optimizer = Adam(model.parameters(), lr=initial_learning_rate)
     return optimizer
-    
 
+def init_weights(m):
+    if isinstance(m, nn.Conv2d):
+        torch.nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+        m.bias.data.fill_(0.01)
+    if isinstance(m, nn.Linear):
+        torch.nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+        m.bias.data.fill_(0.01)
+    
+def build_model_vgg11(dropout_p, model_path):
+    # print("[INFO] loading model...")
+    vgg11 = nn.Sequential(
+                    nn.Conv2d(3, 64, (3, 3), (1, 1), (1, 1)),               # 0
+                    nn.BatchNorm2d(64),                                     # 1
+                    nn.MaxPool2d(2, 2, 0, 1, False, False),                 # 2
+                    nn.ReLU(True),                                          # 3
+                    
+                    nn.Conv2d(64, 128, (3, 3), (1, 1), (1, 1)),             # 4
+                    nn.BatchNorm2d(128),                                    # 5
+                    nn.MaxPool2d(2, 2, 0, 1, False, False),                 # 6
+                    nn.ReLU(True),                                          # 7
+                    
+                    nn.Conv2d(128, 256, (3, 3), (1, 1), (1, 1)),            # 8
+                    nn.ReLU(True),                                          # 9
+                    nn.Conv2d(256, 256, (3, 3), (1, 1), (1, 1)),            # 10
+                    nn.BatchNorm2d(256),                                    # 11
+                    nn.MaxPool2d(2, 2, 0, 1, False, False),                 # 12
+                    nn.ReLU(True),                                          # 13
+                    
+                    nn.Conv2d(256, 512, (3, 3), (1, 1), (1, 1)),            # 14
+                    nn.ReLU(True),                                          # 15
+                    nn.Conv2d(512, 512, (3, 3), (1, 1), (1, 1)),            # 16
+                    nn.BatchNorm2d(512),                                    # 17
+                    nn.MaxPool2d(2, 2, 0, 1, False, False),                 # 18
+                    nn.ReLU(True),                                          # 19
+                    
+                    nn.Conv2d(512, 512, (3, 3), (1, 1), (1, 1)),            # 20
+                    nn.ReLU(True),                                          # 21
+                    nn.Conv2d(512, 512, (3, 3), (1, 1), (1, 1)),            # 22
+                    nn.BatchNorm2d(512),                                    # 23
+                    nn.MaxPool2d(2, 2, 0, 1, False, False),                 # 24
+                    nn.ReLU(True),                                          # 25
+                    
+                    nn.AdaptiveAvgPool2d((7, 7)),                           # 26
+                    nn.Flatten(1, -1),                                      # 27
+                    nn.Linear(512 * 7 * 7, 4096, True),                     # 28
+                    nn.BatchNorm1d(4096),                                   # 29
+                    nn.ReLU(True),                                          # 30
+                    nn.Dropout(dropout_p, False),                           # 31
+                    nn.Linear(4096, 4096, True),                            # 32
+                    nn.BatchNorm1d(4096),                                   # 33
+                    nn.ReLU(True),                                          # 34
+                    nn.Dropout(dropout_p, False),                           # 35
+                    nn.Linear(4096, 8, True)                                # 36
+                )
+    vgg11.apply(init_weights)
+    
+    return vgg11
 
 def build_model_vgg16(dropout_p, model_path):
     # print("[INFO] loading model...")
@@ -108,12 +164,12 @@ def build_model_vgg16(dropout_p, model_path):
                     nn.Linear(512 * 7 * 7, 4096, True),                     # 38
                     nn.BatchNorm1d(4096),                                   # 39
                     nn.ReLU(True),                                          # 40
-                    nn.Dropout(dropout_p, False),                            # 41
-                    nn.Linear(4096, 4096, True),                               # 42
+                    nn.Dropout(dropout_p, False),                           # 41
+                    nn.Linear(4096, 4096, True),                            # 42
                     nn.BatchNorm1d(4096),                                   # 43
                     nn.ReLU(True),                                          # 44
-                    nn.Dropout(dropout_p, False),                            # 45
-                    nn.Linear(4096, 8, True)                                 # 46
+                    nn.Dropout(dropout_p, False),                           # 45
+                    nn.Linear(4096, 8, True)                                # 46
                 )
     # print("[INFO] loading pretrained model...")
     pretrained_model = torch.load(model_path)
@@ -130,6 +186,59 @@ def build_model_vgg16(dropout_p, model_path):
         
     # print("\n[INFO] model build\n")
     
+    return vgg16
+
+
+def build_model_vgg16_no_batchnorm(dropout_p, model_path):
+    # print("[INFO] loading model...")
+    vgg16 = nn.Sequential(
+                    nn.Conv2d(3, 64, (3, 3), (1, 1), (1, 1)),               # 0
+                    nn.ReLU(True),                                          # 1
+                    nn.Conv2d(64, 64, (3, 3), (1, 1), (1, 1)),              # 2
+                    nn.MaxPool2d(2, 2, 0, 1, False, False),                 # 4
+                    nn.ReLU(True),                                          # 5
+                    
+                    nn.Conv2d(64, 128, (3, 3), (1, 1), (1, 1)),             # 6
+                    nn.ReLU(True),                                          # 7
+                    nn.Conv2d(128, 128, (3, 3), (1, 1), (1, 1)),            # 8
+                    nn.MaxPool2d(2, 2, 0, 1, False, False),                 # 9
+                    nn.ReLU(True),                                          # 10
+                    
+                    nn.Conv2d(128, 256, (3, 3), (1, 1), (1, 1)),            # 11
+                    nn.ReLU(True),                                          # 12
+                    nn.Conv2d(256, 256, (3, 3), (1, 1), (1, 1)),            # 13
+                    nn.ReLU(True),                                          # 14
+                    nn.Conv2d(256, 256, (3, 3), (1, 1), (1, 1)),            # 15
+                    nn.MaxPool2d(2, 2, 0, 1, False, False),                 # 16
+                    nn.ReLU(True),                                          # 17
+                    
+                    nn.Conv2d(256, 512, (3, 3), (1, 1), (1, 1)),            # 18
+                    nn.ReLU(True),                                          # 19
+                    nn.Conv2d(512, 512, (3, 3), (1, 1), (1, 1)),            # 20
+                    nn.ReLU(True),                                          # 21        
+                    nn.Conv2d(512, 512, (3, 3), (1, 1), (1, 1)),            # 22
+                    nn.MaxPool2d(2, 2, 0, 1, False, False),                 # 23
+                    nn.ReLU(True),                                          # 24
+                    
+                    nn.Conv2d(512, 512, (3, 3), (1, 1), (1, 1)),            # 25
+                    nn.ReLU(True),                                          # 26
+                    nn.Conv2d(512, 512, (3, 3), (1, 1), (1, 1)),            # 27
+                    nn.ReLU(True),                                          # 28
+                    nn.Conv2d(512, 512, (3, 3), (1, 1), (1, 1)),            # 29
+                    nn.MaxPool2d(2, 2, 0, 1, False, False),                 # 30
+                    nn.ReLU(True),                                          # 31
+                    
+                    nn.AdaptiveAvgPool2d((7, 7)),                           # 32
+                    nn.Flatten(1, -1),                                      # 33
+                    nn.Linear(512 * 7 * 7, 4096, True),                     # 34
+                    nn.ReLU(True),                                          # 35
+                    nn.Dropout(dropout_p, False),                           # 36
+                    nn.Linear(4096, 4096, True),                            # 37
+                    nn.ReLU(True),                                          # 38
+                    nn.Dropout(dropout_p, False),                           # 39
+                    nn.Linear(4096, 8, True)                                # 40
+                )
+    vgg16.apply(init_weights)
     return vgg16
 
 def build_model_vgg19(dropout_p, model_path):
