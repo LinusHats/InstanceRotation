@@ -5,13 +5,12 @@ class ResidualBlock(nn.Module):
         super(ResidualBlock, self).__init__()
         self.conv1 = nn.Sequential(
             nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=stride, padding=1),
-            nn.Batchnorm2d(out_channels),
+            nn.BatchNorm2d(out_channels),
             nn.ReLU(inplace=True)
             )
         self.conv2 = nn.Sequential(
             nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=1, padding=1),
-            nn.Batchnorm2d(out_channels),
-            nn.ReLU(inplace=True)
+            nn.BatchNorm2d(out_channels),
             )
         self.downsample = downsample
         self.relu = nn.ReLU(inplace=True)
@@ -34,7 +33,7 @@ class ResNet(nn.Module):
         self.inplanes = 64
         self.conv1 = nn.Sequential(
             nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3),
-            nn.Batchnorm2d(64),
+            nn.BatchNorm2d(64),
             nn.ReLU(inplace=True))
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
         self.layer0 = self._make_layer(block, 64 , layers[0], stride=1)
@@ -47,9 +46,9 @@ class ResNet(nn.Module):
     def _make_layer(self, block, planes, blocks, stride=1):
         downsample = None
         if stride != 1 or self.inplanes != planes:
-            downsample = nn.Seqential(
-                nn.Conv2s(self.inplanes, planes, kernel_size=1, stride=stride),
-                nn.Batchnorm2d(planes),
+            downsample = nn.Sequential(
+                nn.Conv2d(self.inplanes, planes, kernel_size=1, stride=stride),
+                nn.BatchNorm2d(planes),
             )
         layers = []
         layers.append(block(self.inplanes, planes, stride, downsample))
