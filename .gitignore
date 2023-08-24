@@ -5,6 +5,10 @@ __pycache__/
 
 wandb/
 
+*.pth
+
+FlowSheetKnowledgeGraphPI/
+
 # C extensions
 *.so
 
