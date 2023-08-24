@@ -8,23 +8,14 @@ import torchvision
 import torchvision.transforms as transforms
 from tqdm.auto import tqdm
 
-import train
+from utils import *
 
 # log into wandb
 import wandb
 
 
 def main(config=None):
-
-    # make behaviour deterministic
-    torch.backends.cudnn.deterministic = True
-    random.seed(hash("setting random seeds") % 2**32 - 1)
-    np.random.seed(hash("improves reproducibility") % 2**32 - 1)
-    torch.manual_seed(hash("by removing stochasticity") % 2**32 - 1)
-    torch.cuda.manual_seed_all(hash("so runs are repeatable") % 2**32 - 1)
-    # create sweep config
-
-    
+   
     # set device
     try:
         import torch_directml
@@ -35,15 +26,16 @@ def main(config=None):
        else:
             device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("[INFO] Using device: ", device)
-    base_path = r'C:\Users\lhartz\datasets\FlowsheetRotation'
+    base_path = r'C:\Users\lhartz\datasets\InstanceRotation'
 
     wandb.init(    
-        project="Final_FlowsheetRotation",
+        project="Instance",
+        name="PaddedInstances_100Epochs",
         config = {
         "epochs": 100,
-        "initial_learning_rate": 0.0001,
-        "dropout_p": 0.6,
-        "batch_size": 16,
+        "initial_learning_rate": 0.046,
+        "dropout_p": 0.2,
+        "batch_size": 128,
     })
     
     config = wandb.config
@@ -53,18 +45,18 @@ def main(config=None):
     criterion = criterion.to(device)
     # train the model
     # print("\nStarting to train model")
-    train.train(model, train_dataloader, criterion, optimizer, config.epochs, device, val_dataloader)
+    train(model, train_dataloader, criterion, optimizer, config.epochs, device, val_dataloader)
 
-    train.test(model, test_loader, device, base_path)
+    test(model, test_loader, device, base_path)
     
 def make(config, base_path):
 
     # get the dataloaders
-    train_loader, val_loader, test_loader = train.build_dataloaders(base_path, config.batch_size)
+    train_loader, val_loader, test_loader = build_dataloaders(base_path, config.batch_size)
     # print("\nStarting to build model")
-    model = train.build_model_vgg19(config.dropout_p, f"{base_path}/vgg19_pretrained.pth")
+    model = build_model(model_name="ResNet", dropout_p=config.dropout_p)
     # print("\nStarting to build optimizer")
-    optimizer = train.build_optimizer(model, config.initial_learning_rate)
+    optimizer = build_optimizer(model, config.initial_learning_rate)
     # print("\nStarting to build criterion")
     lossFunction = nn.CrossEntropyLoss()
     criterion = lossFunction

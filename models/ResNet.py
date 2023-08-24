@@ -1,16 +1,18 @@
 from torch import nn
 
 class ResidualBlock(nn.Module):
-    def __init__ (self,  in_channels,  out_channels, stride=1, downsample = None):
+    def __init__ (self,  in_channels,  out_channels, dropout_p=0.5 ,stride=1, downsample = None):
         super(ResidualBlock, self).__init__()
         self.conv1 = nn.Sequential(
             nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=stride, padding=1),
             nn.BatchNorm2d(out_channels),
+            nn.Dropout(p=dropout_p),
             nn.ReLU(inplace=True)
             )
         self.conv2 = nn.Sequential(
             nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(out_channels),
+            nn.Dropout(p=dropout_p),
             )
         self.downsample = downsample
         self.relu = nn.ReLU(inplace=True)
@@ -28,9 +30,10 @@ class ResidualBlock(nn.Module):
         
         
 class ResNet(nn.Module):
-    def  __init__(self, block, layers, num_classes=8):
+    def  __init__(self, block, layers, dropout_p, num_classes=8):
         super(ResNet, self).__init__()
         self.inplanes = 64
+        self.dropout_p = dropout_p
         self.conv1 = nn.Sequential(
             nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3),
             nn.BatchNorm2d(64),
@@ -51,7 +54,7 @@ class ResNet(nn.Module):
                 nn.BatchNorm2d(planes),
             )
         layers = []
-        layers.append(block(self.inplanes, planes, stride, downsample))
+        layers.append(block(self.inplanes, planes, self.dropout_p, stride, downsample))
         self.inplanes = planes
         for _ in range(1, blocks):
             layers.append(block(self.inplanes, planes))

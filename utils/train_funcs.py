@@ -12,8 +12,8 @@ import gc
 
 
 def build_dataloaders(base_path, batch_size):
-    whole_data = DepictionDataset(annotations_file=f"{base_path}/labels.csv",
-                              img_dir=f"{base_path}/TrainingInstanceCatalog", 
+    whole_data = DepictionDataset(annotations_file=f"{base_path}/PaddedTraining.csv",
+                              img_dir=f"{base_path}/PaddedTraining", 
                               img_size=(224, 224))
 
     whole_data.set_mean((0.7826,)) 
@@ -61,7 +61,7 @@ def build_model(model_name, dropout_p=0.7, pretrained=False):
     elif model_name == "vgg19":
         model = models.build_model_vgg19(dropout_p=dropout_p, model_path=None)
     elif model_name == "ResNet":
-        model = models.ResNet(models.ResidualBlock, [3,4,6,3])
+        model = models.ResNet(models.ResidualBlock, [3,4,6,3], dropout_p=dropout_p)
     model.apply(models.model_utils.init_weights)
     return model
 
@@ -119,9 +119,6 @@ def train_batch(train_loader, model, optimizer, lossFunc, device):
         loss.backward()
         # print("[INFO] optimizing...")
         optimizer.step()
-        del images, labels, outputs
-        torch.cuda.empty_cache()
-        gc.collect()
     tacc = tcorr/ttotal
     # print("[INFO] returning loss...")
     return loss, tacc
@@ -133,7 +130,9 @@ def train_log(epoch,train_loss,train_acc, val_loss, val_acc ,example_ct):
               "val_loss": val_loss,
               "val_acc": val_acc
               }, step=example_ct)
-    print(f"\tTRAIN:\t\t{train_loss:.3f}, {train_acc*100:.3f} %\n\tVALIDATION:\t{val_loss:.3f}, {val_acc*100:.3f} %")
+    print(f"EPOCH: \t\t{epoch+1}\n" \
+          f"\tTRAIN:   \t\t{train_loss:.3f}, {train_acc*100:.3f} %\n" \
+          f"\tVALIDATION:\t{val_loss:.3f}, {val_acc*100:.3f} %")
     
     
 def test(model, test_loader, device, base_path):
