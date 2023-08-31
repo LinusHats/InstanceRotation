@@ -35,7 +35,7 @@ def main(config=None):
        else:
             device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("[INFO] Using device: ", device)
-    base_path = r'C:\Users\lhartz\datasets\InstanceRotation'
+    base_path = r'C:\Users\lhartz\datasets\InstanceRotation\paddedWithSpace'
 
     
     with wandb.init(config=config):
@@ -69,29 +69,30 @@ def make(config, base_path):
 if __name__ == "__main__":
     wandb.login(key="c3a6ab2da3aa3b00ec85e71846c96e5385899ac1")
     sweep_config = {
+        "tags": ["SP","SR"],
         'method': 'bayes',  #random
         'name': 'Padded_Flowsheets',
         'project': 'ResNet_InstanceRotation',
         'metric': {
-            'name': 'val_acc',
-            'goal': 'maximize'
+            'name': 'val_loss',
+            'goal': 'minimize'
         },
         'parameters': {
             'batch_size': {
-                'values': [64, 128]
+                'values': [128, 256, 300]
             },
             'initial_learning_rate': {
                 'distribution': 'uniform',
-                'min': 0.00001,
-                'max': 0.1
+                'min': 0.005,
+                'max': 0.5
             },
             'epochs': {
-                'value': 50,
+                'value': 150,
             },
             'dropout_p': {
                 'distribution': 'uniform',
-                'min': 0.1,
-                'max': 0.7,
+                'min': 0.2,
+                'max': 0.8,
             }
         },
     }

@@ -12,14 +12,14 @@ import gc
 
 
 def build_dataloaders(base_path, batch_size):
-    whole_data = DepictionDataset(annotations_file=f"{base_path}/PaddedTraining.csv",
-                              img_dir=f"{base_path}/PaddedTraining", 
+    whole_data = DepictionDataset(annotations_file=f"{base_path}/paddedWithSpaceLabels.csv",
+                              img_dir=f"{base_path}/trainSet", 
                               img_size=(224, 224))
 
     whole_data.set_mean((0.7826,)) 
     whole_data.set_std((0.2941,))
 
-    train_split = 0.75
+    train_split = 0.8
     test_split = 1-train_split
     try:
         train_data, test_data = random_split(dataset=whole_data,
@@ -62,12 +62,15 @@ def build_model(model_name, dropout_p=0.7, pretrained=False):
         model = models.build_model_vgg19(dropout_p=dropout_p, model_path=None)
     elif model_name == "ResNet":
         model = models.ResNet(models.ResidualBlock, [3,4,6,3], dropout_p=dropout_p)
+    # elif model_name = "ResNet50":
+        # model = models.ResNet50()
     model.apply(models.model_utils.init_weights)
+    # opt_model = torch.compile(model)
     return model
 
 
 def build_optimizer(model, initial_learning_rate):
-    optimizer = torch.optim.SGD(model.parameters(), lr=initial_learning_rate, weight_decay = 0.001, momentum = 0.9)  
+    optimizer = torch.optim.Adam(model.parameters(), lr=initial_learning_rate)#, weight_decay = 0.001, momentum = 0.9)  
     return optimizer
 
 def train(model, train_loader, lossFunc, optimizer, epochs, device, val_dataloader, save=False):
@@ -130,12 +133,14 @@ def train_log(epoch,train_loss,train_acc, val_loss, val_acc ,example_ct):
               "val_loss": val_loss,
               "val_acc": val_acc
               }, step=example_ct)
-    print(f"EPOCH: \t\t{epoch+1}\n" \
-          f"\tTRAIN:   \t\t{train_loss:.3f}, {train_acc*100:.3f} %\n" \
+    print(f"EPOCH: \t\t\t{epoch+1}\n" \
+          f"\tTRAIN:   \t{train_loss:.3f}, {train_acc*100:.3f} %\n" \
           f"\tVALIDATION:\t{val_loss:.3f}, {val_acc*100:.3f} %")
     
     
 def test(model, test_loader, device, base_path):
+
+    # torch.save(model, f"{base_path}/models/test.pth")  
     model.eval()
 
     # Run the model on some test examples
@@ -152,6 +157,7 @@ def test(model, test_loader, device, base_path):
               f"test images: {correct / total:%}")
         
         wandb.log({"test_accuracy": correct / total})
+    wandb.unwatch()
     # save the model locally in case...
     timestamp = datetime.now().strftime('%Y%m%d_%H-%M-%S')
   
@@ -160,7 +166,7 @@ def test(model, test_loader, device, base_path):
     except:
         print("something went wrong saving the pth")
     try:
-        torch.onnx.export(model, images, f"{base_path}/models/vgg16_InstanceCatalog.onnx")
+        torch.onnx.export(model, images, f"{base_path}/models/{timestamp}.onnx")
         wandb.save(f"{base_path}/models/{timestamp}.onnx")
     except:
        print("[WARNING]: something went wrong trying to save the onnx file")

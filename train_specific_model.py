@@ -26,16 +26,17 @@ def main(config=None):
        else:
             device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("[INFO] Using device: ", device)
-    base_path = r'C:\Users\lhartz\datasets\InstanceRotation'
+    base_path = r'C:\Users\lhartz\datasets\InstanceRotation\paddedWithSpace'
 
     wandb.init(    
         project="Instance",
-        name="PaddedInstances_100Epochs",
+        name="paddedWithSpace",
+        tags=["SP","SR", "BZ:256", "DP:.5", "EP:150"],
         config = {
-        "epochs": 100,
-        "initial_learning_rate": 0.046,
-        "dropout_p": 0.2,
-        "batch_size": 128,
+        "epochs": 150,
+        "initial_learning_rate": 0.04,
+        "dropout_p": 0.5,
+        "batch_size": 256,
     })
     
     config = wandb.config
