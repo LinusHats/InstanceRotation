@@ -12,8 +12,8 @@ import gc
 
 
 def build_dataloaders(base_path, batch_size):
-    whole_data = DepictionDataset(annotations_file=f"{base_path}/paddedWithSpaceLabels.csv",
-                              img_dir=f"{base_path}/trainSet", 
+    whole_data = DepictionDataset(annotations_file=f"{base_path}/paddedWithSpaceLabels_aug.csv",
+                              img_dir=f"{base_path}/trainSet_aug", 
                               img_size=(224, 224))
 
     whole_data.set_mean((0.7826,)) 
@@ -59,12 +59,12 @@ def build_model(model_name, dropout_p=0.7, pretrained=False):
     if model_name == "vgg16":
         model = models.build_model_vgg16(dropout_p=dropout_p, model_path=None)
     elif model_name == "vgg19":
-        model = models.build_model_vgg19(dropout_p=dropout_p, model_path=None)
+        model = models.build_model_vgg19(dropout_p=dropout_p)
     elif model_name == "ResNet":
         model = models.ResNet(models.ResidualBlock, [3,4,6,3], dropout_p=dropout_p)
     # elif model_name = "ResNet50":
         # model = models.ResNet50()
-    model.apply(models.model_utils.init_weights)
+    #model.apply(models.model_utils.init_weights)
     # opt_model = torch.compile(model)
     return model
 

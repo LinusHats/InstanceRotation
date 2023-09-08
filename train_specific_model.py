@@ -29,14 +29,14 @@ def main(config=None):
     base_path = r'C:\Users\lhartz\datasets\InstanceRotation\paddedWithSpace'
 
     wandb.init(    
-        project="Instance",
-        name="paddedWithSpace",
-        tags=["SP","SR", "BZ:256", "DP:.5", "EP:150"],
+        project="Flowsheet",
+        name="VGG19",
+        tags=['WholeDataset'],
         config = {
-        "epochs": 150,
-        "initial_learning_rate": 0.04,
-        "dropout_p": 0.5,
-        "batch_size": 256,
+        "epochs": 50,
+        "initial_learning_rate": 0.0001,
+        "dropout_p": 0.6,
+        "batch_size": 8,
     })
     
     config = wandb.config
@@ -55,7 +55,7 @@ def make(config, base_path):
     # get the dataloaders
     train_loader, val_loader, test_loader = build_dataloaders(base_path, config.batch_size)
     # print("\nStarting to build model")
-    model = build_model(model_name="ResNet", dropout_p=config.dropout_p)
+    model = build_model(model_name="vgg19", dropout_p=config.dropout_p)
     # print("\nStarting to build optimizer")
     optimizer = build_optimizer(model, config.initial_learning_rate)
     # print("\nStarting to build criterion")

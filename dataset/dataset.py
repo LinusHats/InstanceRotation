@@ -40,7 +40,7 @@ class DepictionDataset(Dataset):
         else:
 
             transform = transforms.Compose([
-            transforms.ToTensor(),Training finalinstance
+            transforms.ToTensor(),
             ])
         
         img_path = os.path.join(self.img_dir,

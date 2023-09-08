@@ -1,4 +1,5 @@
 from torch import nn
+from torchvision import models
 
 def build_model_vgg11(dropout_p):
     # print("[INFO] loading model...")
@@ -124,7 +125,7 @@ def build_model_vgg16(dropout_p, model_path):
     return vgg16
 
 
-def build_model_vgg16_no_batchnorm(dropout_p, model_path):
+def build_model_vgg16_no_batchnorm(dropout_p):
     # print("[INFO] loading model...")
     vgg16 = nn.Sequential(
                     nn.Conv2d(3, 64, (3, 3), (1, 1), (1, 1)),               # 0
@@ -176,7 +177,7 @@ def build_model_vgg16_no_batchnorm(dropout_p, model_path):
     vgg16.apply(init_weights)
     return vgg16
 
-def build_model_vgg19(dropout_p, model_path):
+def build_model_vgg19(dropout_p):
     vgg19 = nn.Sequential(
         nn.Conv2d(3, 64, (3, 3), (1, 1), (1, 1)),               # 0
         nn.ReLU(True),                                          # 1
@@ -239,7 +240,7 @@ def build_model_vgg19(dropout_p, model_path):
         nn.Linear(4096, 8, True)            # 52
     )
     # print("[INFO] getting pretrained_model")
-    pretrained_model = torch.load(model_path, map_location="cpu")
+    pretrained_model = models.vgg19(pretrained=True)
     # print("[INFO] setting weights and biases")
     for i, j in zip([0, 2, 6, 8, 12, 14, 16, 18, 22, 24, 26, 28, 32, 34, 36, 38], 
             [0, 2, 5, 7, 10, 12, 14, 16, 19, 21, 23, 25, 28, 30, 32, 34]):
